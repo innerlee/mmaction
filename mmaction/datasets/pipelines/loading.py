@@ -258,9 +258,9 @@ class FrameSelector(object):
 
         imgs = np.array(imgs)
         # The default channel order of OpenCV is BGR, thus we change it to RGB
-        imgs = imgs[:, :, :, ::-1]
-        imgs = imgs.transpose([0, 3, 1, 2])
-        results['imgs'] = np.array(imgs)
-        results['ori_shape'] = imgs.shape[-2:]
+        # imgs = imgs[:, :, :, ::-1]
+        # imgs = imgs.transpose([0, 3, 1, 2])
+        results['imgs'] = imgs
+        results['ori_shape'] = imgs.shape[-3:-1]
 
         return results

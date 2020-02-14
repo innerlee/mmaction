@@ -146,6 +146,9 @@ class FormatShape(object):
 
     def __call__(self, results):
         imgs = results['imgs']
+
+        imgs = np.array(imgs.transpose([0, 3, 1, 2]))
+
         # [M x C x H x W]
         # M = 1 * N_oversample * N_clips * L
         if self.input_format == 'NCTHW':

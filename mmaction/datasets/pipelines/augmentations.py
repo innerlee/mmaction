@@ -1,7 +1,9 @@
 import random
 
+import cv2
 import mmcv
 import numpy as np
+# import torch
 from torch.nn.modules.utils import _pair
 
 from ..registry import PIPELINES
@@ -43,7 +45,8 @@ class MultiScaleCrop(object):
 
     def __call__(self, results):
         imgs = results['imgs']
-        img_h, img_w = imgs.shape[-2:]
+        # img_h, img_w = imgs.shape[-2:]
+        img_h, img_w = imgs.shape[-3:-1]
 
         base_size = min(img_h, img_w)
 
@@ -80,10 +83,14 @@ class MultiScaleCrop(object):
         results['crop_bbox'] = np.array(
             [x_offset, y_offset, x_offset + crop_w, y_offset + crop_h],
             dtype=np.int32)
-        results['imgs'] = imgs[:, :, y_offset:y_offset + crop_h,
-                               x_offset:x_offset + crop_w]
+        # results['imgs'] = imgs[:, :, y_offset:y_offset + crop_h,
+        # x_offset:x_offset + crop_w]
+        results['imgs'] = imgs[:, y_offset:y_offset + crop_h,
+                               x_offset:x_offset + crop_w, :]
 
-        results['img_shape'] = results['imgs'].shape[-2:]
+        # results['img_shape'] = results['imgs'].shape[-2:]
+        results['img_shape'] = results['imgs'].shape[-3:-1]
+
         results['scales'] = self.scales
         return results
 
@@ -137,7 +144,12 @@ class Resize(object):
         self.interpolation = interpolation
 
     def __call__(self, results):
-        imgs = results['imgs'].transpose([0, 2, 3, 1])
+        # original
+        # imgs = results['imgs'].transpose([0, 2, 3, 1])
+
+        # no transpose version
+        imgs = results['imgs']
+
         if self.keep_ratio:
             tuple_list = [
                 mmcv.imrescale(img, self.scale, return_scale=True)
@@ -155,9 +167,17 @@ class Resize(object):
                 [w_scales[0], h_scales[0], w_scales[0], h_scales[0]],
                 dtype=np.float32)
 
-        imgs = np.array(imgs).transpose([0, 3, 1, 2])
+        # imgs = np.array(imgs).transpose([0, 3, 1, 2])
+
+        # no transpose version
+        imgs = np.array(imgs)
+
         results['imgs'] = imgs
-        results['img_shape'] = results['imgs'].shape[-2:]
+        # results['img_shape'] = results['imgs'].shape[-2:]
+
+        # no transpose version
+        results['img_shape'] = results['imgs'].shape[-3:-1]
+
         results['keep_ratio'] = self.keep_ratio
         results['scale_fatcor'] = self.scale_factor
 
@@ -198,9 +218,11 @@ class Flip(object):
 
         if flip:
             if self.direction == 'horizontal':
-                results['imgs'] = np.flip(results['imgs'], axis=3).copy()
+                # results['imgs'] = np.flip(results['imgs'], axis=3).copy()
+                results['imgs'] = np.flip(results['imgs'], axis=2)
             else:
-                results['imgs'] = np.flip(results['imgs'], axis=2).copy()
+                # results['imgs'] = np.flip(results['imgs'], axis=2).copy()
+                results['imgs'] = np.flip(results['imgs'], axis=1)
 
         results['flip'] = flip
         results['flip_direction'] = self.direction
@@ -233,13 +255,20 @@ class Normalize(object):
         self.to_bgr = to_bgr
 
     def __call__(self, results):
-        imgs = results['imgs'].astype(np.float32)
+        imgs = np.float32(results['imgs'])
+        mean = np.float64(self.mean.reshape(1, -1))
+        stdinv = 1 / np.float64(self.std.reshape(1, -1))
+        # if self.to_bgr:
+        #     imgs = imgs[:, ::-1, ...].copy()
+        #     imgs = imgs[:,:, ...,::-1].copy()
 
-        if self.to_bgr:
-            imgs = imgs[:, ::-1, ...].copy()
+        # cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)  # inplace
+        for img in imgs:
+            cv2.subtract(img, mean, img)  # inplace
+            cv2.multiply(img, stdinv, img)  # inplace
 
-        imgs -= self.mean[:, None, None]
-        imgs /= self.std[:, None, None]
+        # imgs -= self.mean[:, None, None]
+        # imgs /= self.std[:, None, None]
 
         results['imgs'] = imgs
         results['img_norm_cfg'] = dict(
@@ -251,6 +280,46 @@ class Normalize(object):
         repr_str += '(mean={}, std={}, to_bgr={})'.format(
             self.mean, self.std, self.to_bgr)
         return repr_str
+
+
+# @PIPELINES.register_module
+# class Normalize_tensor(object):
+#     """Normalize images with the given mean and std value.
+
+#     Required keys are "imgs", added or modified keys are "imgs"
+#     and "img_norm_cfg".
+
+#     Attributes:
+#         mean (np.ndarray): Mean values of different channels.
+#         std (np.ndarray): Std values of different channels.
+#         to_bgr (bool): Whether to convert channels from RGB to BGR.
+#     """
+#     def __init__(self, mean, std, to_bgr=False):
+#         self.mean = torch.FloatTensor(mean)
+#         self.std = torch.FloatTensor(std)
+#         self.to_bgr = to_bgr
+
+#     def __call__(self, results):
+#         imgs = results['imgs'].float()
+
+#         if self.to_bgr:
+#             imgs = imgs[:, ::-1, ...].copy()
+
+#         imgs.sub_(self.mean[None, :, None, None, None])
+# .div_(self.std[None, :, None, None, None])
+#         # stdinv = torch.reciprocal(self.std[None, :, None, None, None])
+#         # imgs.sub_(self.mean[None, :, None, None, None]).mul_(stdinv)
+
+#         results['imgs'] = imgs
+#         # results['img_norm_cfg'] =
+# dict(mean=self.mean, std=self.std, to_bgr=self.to_bgr)
+#         return results
+
+#     def __repr__(self):
+#         repr_str = self.__class__.__name__
+#         repr_str += '(mean={}, std={}, to_bgr={})'
+# .format(self.mean, self.std, self.to_bgr)
+#         return repr_str
 
 
 @PIPELINES.register_module
