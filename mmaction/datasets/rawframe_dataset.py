@@ -48,7 +48,14 @@ class RawframeDataset(BaseDataset):
         video_infos = []
         with open(self.ann_file, 'r') as fin:
             for line in fin:
-                frame_dir, total_frames, label = line.split(' ')
+                # frame_dir, total_frames, label = line.strip().split(' ')
+                results = line.strip().split(' ')
+                if len(results) < 3:
+                    continue
+                frame_dir = results[0]
+                total_frames = results[1]
+                label = results[2]
+
                 if self.data_prefix is not None:
                     frame_dir = osp.join(self.data_prefix, frame_dir)
                 video_infos.append(
