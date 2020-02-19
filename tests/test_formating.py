@@ -101,15 +101,15 @@ def test_collect():
 
 def test_format_shape():
     results = dict(
-        imgs=np.random.randn(3, 224, 224, 3), num_clips=1, clip_len=3)
+        imgs=np.random.randn(3, 3, 224, 224), num_clips=1, clip_len=3)
     format_shape = FormatShape('NCHW')
-    assert format_shape(results)['input_shape'] == (3, 224, 224, 3)
+    assert format_shape(results)['input_shape'] == (3, 3, 224, 224)
 
     format_shape = FormatShape()
     assert format_shape(results)['input_shape'] == (1, 3, 3, 224, 224)
 
     results = dict(
-        imgs=np.random.randn(18, 224, 224, 3), num_clips=2, clip_len=3)
+        imgs=np.random.randn(18, 3, 224, 224), num_clips=2, clip_len=3)
     assert format_shape(results)['input_shape'] == (6, 3, 3, 224, 224)
 
     target_keys = ['imgs', 'input_shape']

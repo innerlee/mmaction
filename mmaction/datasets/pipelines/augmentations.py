@@ -1,4 +1,5 @@
 import random
+from collections.abc import Sequence
 
 import mmcv
 import numpy as np
@@ -234,18 +235,18 @@ class Normalize(object):
     and "img_norm_cfg".
 
     Attributes:
-        mean (Sequence | np.ndarray): Mean values of different channels.
-        std (Sequence | np.ndarray): Std values of different channels.
+        mean (Sequence[float]): Mean values of different channels.
+        std (Sequence[float]): Std values of different channels.
         to_bgr (bool): Whether to convert channels from RGB to BGR.
     """
 
     def __init__(self, mean, std, to_bgr=False):
-        if not isinstance(mean, (list, tuple, np.ndarray)):
+        if not isinstance(mean, Sequence):
             raise TypeError(
                 'Mean must be list, tuple or np.ndarray, but got {}'.format(
                     type(mean)))
 
-        if not isinstance(std, (list, tuple, np.ndarray)):
+        if not isinstance(std, Sequence):
             raise TypeError(
                 'Std must be list, tuple or np.ndarray, but got {}'.format(
                     type(std)))

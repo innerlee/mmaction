@@ -57,7 +57,6 @@ class VideoDataset(BaseDataset):
         if not isinstance(results, list):
             raise TypeError('results must be a list, but got {}'.format(
                 type(results)))
-
         assert len(results) == len(self), (
             'The length of results is not equal to the dataset len: {} != {}'.
             format(len(results), len(self)))
@@ -66,9 +65,6 @@ class VideoDataset(BaseDataset):
             raise TypeError(
                 'topk must be int or tuple of int, but got {}'.format(
                     type(topk)))
-
-        if isinstance(topk, int):
-            topk = (topk, )
 
         metrics = metrics if isinstance(metrics, (list, tuple)) else [metrics]
         allowed_metrics = ['top_k_accuracy', 'mean_class_accuracy']

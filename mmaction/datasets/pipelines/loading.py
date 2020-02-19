@@ -141,8 +141,9 @@ class PyAVDecode(object):
             results['frame_inds'] = np.mod(results['frame_inds'], len(imgs))
 
         imgs = imgs[results['frame_inds']]
+        imgs = imgs.transpose([0, 3, 1, 2])
         results['imgs'] = np.array(imgs)
-        results['ori_shape'] = imgs.shape[1:3]
+        results['ori_shape'] = imgs.shape[-2:]
         return results
 
     def __repr__(self):
@@ -178,8 +179,9 @@ class DecordDecode(object):
             imgs.append(cur_frame)
         imgs = np.array(imgs)
 
+        imgs = imgs.transpose([0, 3, 1, 2])
         results['imgs'] = np.array(imgs)
-        results['ori_shape'] = imgs.shape[1:3]
+        results['ori_shape'] = imgs.shape[-2:]
         return results
 
 
@@ -209,8 +211,9 @@ class OpenCVDecode(object):
         imgs = np.array(imgs)
         # The default channel order of OpenCV is BGR, thus we change it to RGB
         imgs = imgs[:, :, :, ::-1]
+        imgs = imgs.transpose([0, 3, 1, 2])
         results['imgs'] = np.array(imgs)
-        results['ori_shape'] = imgs.shape[1:3]
+        results['ori_shape'] = imgs.shape[-2:]
 
         return results
 
@@ -258,7 +261,8 @@ class FrameSelector(object):
         imgs = np.array(imgs)
         # The default channel order of OpenCV is BGR, thus we change it to RGB
         imgs = imgs[:, :, :, ::-1]
+        imgs = imgs.transpose([0, 3, 1, 2])
         results['imgs'] = np.array(imgs)
-        results['ori_shape'] = imgs.shape[1:3]
+        results['ori_shape'] = imgs.shape[-2:]
 
         return results
