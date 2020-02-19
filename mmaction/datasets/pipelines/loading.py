@@ -253,13 +253,12 @@ class FrameSelector(object):
                 frame_idx += 1
             filepath = osp.join(directory, filename_tmpl.format(frame_idx))
             img_bytes = self.file_client.get(filepath)
-            cur_frame = mmcv.imfrombytes(img_bytes)
+            # Get frame with channel order RGB directly.
+            cur_frame = mmcv.imfrombytes(img_bytes, channel_order='rgb')
             imgs.append(cur_frame)
 
         imgs = np.array(imgs)
-        # The default channel order of OpenCV is BGR, thus we change it to RGB
-        imgs = imgs[:, :, :, ::-1]
-        results['imgs'] = np.array(imgs)
-        results['ori_shape'] = imgs.shape[1:3]
+        results['imgs'] = imgs
+        results['ori_shape'] = imgs.shape[-2:]
 
         return results
