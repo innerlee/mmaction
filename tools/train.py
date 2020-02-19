@@ -5,6 +5,7 @@ import random
 import numpy as np
 import torch
 from mmcv import Config
+from mmcv.image import use_backend
 from mmcv.runner import init_dist
 
 from mmaction import __version__
@@ -41,6 +42,11 @@ def parse_args():
         '--autoscale-lr',
         action='store_true',
         help='automatically scale lr with the number of gpus')
+    parser.add_argument(
+        '--jpeg_backend',
+        type=str,
+        default='cv2',
+        help='backend for jpeg decoding')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -93,6 +99,10 @@ def main():
     if args.seed is not None:
         logger.info('Set random seed to {}'.format(args.seed))
         set_random_seed(args.seed)
+
+    # set jpeg backend
+    if args.jpeg_backend is not None:
+        use_backend(args.jpeg_backend)
 
     model = build_recognizer(
         cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
