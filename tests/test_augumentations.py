@@ -38,10 +38,10 @@ class TestAugumentations(object):
             h = int(origin_shape[1] * scale_factors)
             return w == target_shape[0] and h == target_shape[1]
         else:
-            w = int(origin_shape[0] * scale_factors[0])
-            h = int(origin_shape[1] * scale_factors[1])
-            w_origin = int(target_shape[0] / scale_factors[0])
-            h_origin = int(target_shape[1] / scale_factors[1])
+            w = int(origin_shape[0] * scale_factors[1])
+            h = int(origin_shape[1] * scale_factors[0])
+            w_origin = int(target_shape[0] / scale_factors[1])
+            h_origin = int(target_shape[1] / scale_factors[0])
             return (w == target_shape[0] or w_origin == origin_shape[0]) and \
                    (h == target_shape[1] or h_origin == origin_shape[1])
 
@@ -152,6 +152,16 @@ class TestAugumentations(object):
                                 resize_results['scale_factor'],
                                 resize_results['keep_ratio'])
         assert resize_results['img_shape'] == (256, 341)
+
+        imgs = np.random.rand(2, 240, 320, 3)
+        results = dict(imgs=imgs)
+        resize = Resize(scale=(320, 320), keep_ratio=False)
+        resize_results = resize(results)
+        assert self.check_keys_contain(resize_results.keys(), target_keys)
+        assert self.check_scale(imgs.shape[1:3], resize_results['img_shape'],
+                                resize_results['scale_factor'],
+                                resize_results['keep_ratio'])
+        assert resize_results['img_shape'] == (320, 320)
 
         imgs = np.random.rand(2, 240, 320, 3)
         results = dict(imgs=imgs)
