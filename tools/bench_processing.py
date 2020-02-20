@@ -25,6 +25,7 @@ def main():
         '--jpeg_backend',
         type=str,
         default='cv2',
+        choices=['cv2', 'turbojpeg'],
         help='backend for jpeg decoding')
     args = parser.parse_args()
     cfg = Config.fromfile(args.config)
