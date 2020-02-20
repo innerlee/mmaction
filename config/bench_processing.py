@@ -30,5 +30,5 @@ data = dict(
         ann_file='data/benchlist.txt',
         data_prefix='',
         pipeline=train_pipeline,
-        filename_tmpl='img_{:05}.jpg'))
+        filename_tmpl='{:05}.jpg'))
 workflow = [('train', 1)]

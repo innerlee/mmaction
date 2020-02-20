@@ -39,9 +39,7 @@ def main():
 
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
-        print(data['imgs'])
         for img in data['imgs']:
-
             prog_bar.update()
 
 
